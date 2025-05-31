@@ -1,30 +1,39 @@
 import json
 import argparse
 from em_algorithm import em_algorithm
-from initialization import load_data
+import numpy as np
 
 
-def save_estimates(output_file, Theta, ThetaB):
-    output = {
-        "Theta": Theta.tolist(),
-        "ThetaB": ThetaB.tolist()
-    }
-    with open(output_file, 'w') as f:
-        json.dump(output, f)
-
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--input', required=True, help='Plik wejściowy z danymi .json')
-    parser.add_argument('--output', required=True, help='Plik wyjściowy do zapisu estymacji .json')
-    parser.add_argument('--estimate-alpha', default='no', help='Czy szacować alpha? (no = obowiązkowa wersja)')
+def ParseArguments():
+    parser = argparse.ArgumentParser(description="Motif estimator (EM)")
+    parser.add_argument('--input', default="generated_data.json", required=False,
+                        help='File with input data (default: %(default)s)')
+    parser.add_argument('--output', default="estimated_params.json", required=False,
+                        help='File where the estimated parameters will be saved (default: %(default)s)')
+    parser.add_argument('--estimate-alpha', default="no", required=False,
+                        help='Should alpha be estimated or not? (default: %(default)s)')
     args = parser.parse_args()
+    return args.input, args.output, args.estimate_alpha
 
-    data, w, k, alpha = load_data(args.input)
-    if args.estimate_alpha.lower() == 'yes':
-        raise NotImplementedError("Bonusowa wersja z estymacją alpha jeszcze niezaimplementowana.")
+input_file, output_file, estimate_alpha_flag = ParseArguments()
 
-    Theta, ThetaB = em_algorithm(data, w, alpha)
-    save_estimates(args.output, Theta, ThetaB)
+with open(input_file, 'r') as inputfile:
+    data = json.load(inputfile)
 
-if __name__ == "__main__":
-    main()
+alpha = data['alpha']
+data = np.asarray(data['data'])
+k, w = data.shape
+
+estimate_alpha = estimate_alpha_flag.lower() == "yes"
+
+# EM estymacja
+Theta, ThetaB, estimated_alpha = em_algorithm(data, alpha, w, estimate_alpha=estimate_alpha)
+
+estimated_params = {
+    "alpha": estimated_alpha if estimate_alpha else alpha,
+    "Theta": Theta.tolist(),
+    "ThetaB": ThetaB.tolist()
+}
+
+with open(output_file, 'w') as outfile:
+    json.dump(estimated_params, outfile)

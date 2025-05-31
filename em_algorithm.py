@@ -2,19 +2,19 @@ import numpy as np
 from likelihood import calc_lik_motif, calc_lik_back
 from initialization import initialize_params
 
-def expectation_step(X, Theta, ThetaB, alpha):
+def expectation_step(data, Theta, ThetaB, alpha):
     gammas = []
-    for seq in X:
+    for seq in data:
         p_motif = calc_lik_motif(seq, Theta)
         p_bg = calc_lik_back(seq, ThetaB)
         gamma = (alpha * p_motif) / (alpha * p_motif + (1 - alpha) * p_bg)
         gammas.append(gamma)
     return np.array(gammas)
 
-def maximization_step(X, gammas, w):
+def maximization_step(data, gammas, w):
     Theta = np.zeros((4, w))
     ThetaB = np.zeros(4)
-    for i, seq in enumerate(X):
+    for i, seq in enumerate(data):
         gamma = gammas[i]
         for j, nuc in enumerate(seq):
             Theta[nuc - 1, j] += gamma
