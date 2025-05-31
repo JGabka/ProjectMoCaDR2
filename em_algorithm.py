@@ -2,42 +2,49 @@ import numpy as np
 from likelihood import calc_lik_motif, calc_lik_back
 from initialization import initialize_params
 
-def expectation_step(data, Theta, ThetaB, alpha):
-    responsibilities = []
-    for seq in data:
-        motif_lik = calc_lik_motif(seq, Theta)
-        bg_lik = calc_lik_back(seq, ThetaB)
-        denom = alpha * motif_lik + (1 - alpha) * bg_lik
-        gamma = (alpha * motif_lik) / denom
-        responsibilities.append(gamma)
-    return np.array(responsibilities)
+def expectation_step(X, Theta, ThetaB, alpha):
+    gammas = []
+    for seq in X:
+        p_motif = calc_lik_motif(seq, Theta)
+        p_bg = calc_lik_back(seq, ThetaB)
+        gamma = (alpha * p_motif) / (alpha * p_motif + (1 - alpha) * p_bg)
+        gammas.append(gamma)
+    return np.array(gammas)
 
-def maximization_step(data, responsibilities, w):
+def maximization_step(X, gammas, w):
     Theta = np.zeros((4, w))
     ThetaB = np.zeros(4)
-    total_gamma = np.sum(responsibilities)
-    total_1_gamma = len(data) - total_gamma
-
-    for i, seq in enumerate(data):
-        gamma = responsibilities[i]
-        for pos, nuc in enumerate(seq):
-            Theta[nuc - 1, pos] += gamma
+    for i, seq in enumerate(X):
+        gamma = gammas[i]
+        for j, nuc in enumerate(seq):
+            Theta[nuc - 1, j] += gamma
             ThetaB[nuc - 1] += (1 - gamma)
-
-
-    for j in range(w):
-        Theta[:, j] /= np.sum(Theta[:, j])
-    ThetaB /= np.sum(ThetaB)
-
+    Theta = np.maximum(Theta, 1e-8)
+    Theta /= Theta.sum(axis=0)
+    ThetaB = np.maximum(ThetaB, 1e-8)
+    ThetaB /= ThetaB.sum()
     return Theta, ThetaB
 
-def run_em(data, w, alpha, max_iter=100, tol=1e-6):
+def em_algorithm(data, alpha, w, estimate_alpha=False, max_iter=100, tol=1e-6):
     Theta, ThetaB = initialize_params(w)
-    for _ in range(max_iter):
-        responsibilities = expectation_step(data, Theta, ThetaB, alpha)
-        new_Theta, new_ThetaB = maximization_step(data, responsibilities, w)
 
-        if np.allclose(Theta, new_Theta, atol=tol) and np.allclose(ThetaB, new_ThetaB, atol=tol):
+    if estimate_alpha:
+        alpha = 0.5
+
+    for iteration in range(max_iter):
+        gammas = expectation_step(data, Theta, ThetaB, alpha)
+        Theta_new, ThetaB_new = maximization_step(data, gammas, w)
+
+        if estimate_alpha:
+            alpha_new = np.mean(gammas)
+        else:
+            alpha_new = alpha
+
+        if (np.allclose(Theta, Theta_new, atol=tol) and
+                np.allclose(ThetaB, ThetaB_new, atol=tol) and
+                abs(alpha - alpha_new) < tol):
             break
-        Theta, ThetaB = new_Theta, new_ThetaB
-    return Theta, ThetaB
+
+        Theta, ThetaB, alpha = Theta_new, ThetaB_new, alpha_new
+
+    return Theta, ThetaB, alpha
