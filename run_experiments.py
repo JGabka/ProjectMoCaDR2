@@ -53,7 +53,7 @@ def run_multiple_experiments(w, k, alpha, n, output_dir):
     print(f"Average TVD: {np.mean(tvd_scores):.4f}")
     print(f"Standard deviation: {np.std(tvd_scores):.4f}")
 
-    plt.hist(tvd_scores, bins=10, color='skyblue', edgecolor='black')
+    plt.hist(tvd_scores, bins=30, color='skyblue', edgecolor='black')
     plt.title(f"Histogram TVD (w={w}, k={k}, alpha={alpha})")
     plt.xlabel("TVD")
     plt.ylabel("Frequency")
