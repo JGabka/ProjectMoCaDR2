@@ -105,7 +105,7 @@ if __name__ == "__main__":
     alpha_vals = [0.1, 0.3, 0.5, 0.7, 0.9]
 
     print("Running experiments (this may take a while)...")
-    results = experiment_grid(k_vals, w_vals, alpha_vals, n_repeats=10)
+    results = experiment_grid(k_vals, w_vals, alpha_vals, n_repeats=50)
 
     print("Plotting TVD vs k...")
     plot_tvd_vs_k(results, alpha_fixed=0.5)
