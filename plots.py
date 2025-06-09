@@ -13,7 +13,7 @@ def experiment_grid(k_values, w_values, alpha_values, n_repeats=10):
                 for _ in range(n_repeats):
                     Theta_true, ThetaB_true = generate_random_params(w)
                     X = generate_data(k, w, alpha, Theta_true, ThetaB_true)
-                    Theta_est, ThetaB_est, _ = em_algorithm(X, alpha, w, estimate_alpha=False)
+                    Theta_est, ThetaB_est, _ = em_algorithm(X, alpha, w, estimate_alpha=True)
                     tvd = compute_average_tvd(Theta_true, ThetaB_true, Theta_est, ThetaB_est)
                     tvds.append(tvd)
                 avg = np.mean(tvds)
@@ -45,7 +45,7 @@ def plot_tvd_vs_k(results, alpha_fixed=0.5):
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig(f"tvd_vs_k_alpha{int(alpha_fixed*100)}.png")
+    plt.savefig(f"tvd_vs_k_alpha{int(alpha_fixed*100)}_est.png")
     plt.close()
 
 
@@ -69,7 +69,7 @@ def plot_tvd_vs_w(results, alpha_fixed=0.5):
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig(f"tvd_vs_w_alpha{int(alpha_fixed*100)}.png")
+    plt.savefig(f"tvd_vs_w_alpha{int(alpha_fixed*100)}_est.png")
     plt.close()
 
 
@@ -96,7 +96,7 @@ def plot_tvd_vs_alpha(results):
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig(f"tvd_vs_alpha_subset.png")
+    plt.savefig(f"tvd_vs_alpha_subset_est.png")
     plt.close()
 
 if __name__ == "__main__":
