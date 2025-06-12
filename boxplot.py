@@ -14,7 +14,7 @@ def experiment_grid(k_values, w_values, alpha_values, n_repeats=50):
                 for _ in range(n_repeats):
                     Theta_true, ThetaB_true = generate_random_params(w)
                     X = generate_data(k, w, alpha, Theta_true, ThetaB_true)
-                    Theta_est, ThetaB_est, _ = em_algorithm(X, alpha, w, estimate_alpha=False)
+                    Theta_est, ThetaB_est, _ = em_algorithm(X, alpha, w, estimate_alpha=True)
                     tvd = compute_average_tvd(Theta_true, ThetaB_true, Theta_est, ThetaB_est)
                     tvds.append(tvd)
                 avg = np.mean(tvds)
@@ -45,7 +45,7 @@ def plot_boxplot_tvd_vs_w(results, k_fixed=200, alpha_fixed=0.5):
     plt.ylabel("TVD")
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig(f"boxplot_tvd_vs_w_k{k_fixed}.png")
+    plt.savefig(f"boxplot_tvd_vs_w_k{k_fixed}_est.png")
     plt.close()
 
 
@@ -67,7 +67,7 @@ def plot_boxplot_tvd_vs_k(results, w_fixed=5, alpha_fixed=0.5):
     plt.ylabel("TVD")
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig(f"boxplot_tvd_vs_k_w{w_fixed}.png")
+    plt.savefig(f"boxplot_tvd_vs_k_w{w_fixed}_est.png")
     plt.close()
 
 
